@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Diffie-Hellman Simulation</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #4CAF50;
+        }
+
+        h2 {
+            color: #2196F3;
+        }
+
+        #normal-chat, #attack-chat, #keys-window {
+            background-color: #ffffff;
+            border: 2px solid #4CAF50;
+            border-radius: 12px;
+            padding: 20px;
+            width: 80%;
+            margin-top: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        textarea, input, button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #keys-window {
+            margin-top: 30px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Diffie-Hellman Key Exchange Simulation</h1>
+
+    <label>
+        <input type="checkbox" id="attackModeSwitch"> Under Attack Mode
+    </label>
+
+    <div id="normal-chat">
+        <h2>Normal Communication</h2>
+        <textarea id="normal-messages" rows="10" readonly></textarea><br>
+        <input type="text" id="normal-input" placeholder="Message">
+        <button onclick="sendMessage('Alice', false)">Send as Alice</button>
+        <button onclick="sendMessage('Bob', false)">Send as Bob</button>
+    </div>
+
+    <div id="attack-chat" class="hidden">
+        <h2>Under Attack Communication</h2>
+        <textarea id="attack-messages" rows="10" readonly></textarea><br>
+        <input type="text" id="attack-input" placeholder="Message">
+        <button onclick="sendMessage('Alice', true)">Send as Alice</button>
+        <button onclick="sendMessage('Bob', true)">Send as Bob</button>
+        <label>Modify Message: <input type="text" id="modified-message" placeholder="Edit message here"></label>
+    </div>
+
+    <div id="keys-window">
+        <h3>Public Keys and Shared Keys</h3>
+        <p><strong>Alice's Public Key:</strong> <span id="alice-public-key"></span></p>
+        <p><strong>Bob's Public Key:</strong> <span id="bob-public-key"></span></p>
+        <p><strong>Mallory's Public Key:</strong> <span id="mallory-public-key"></span></p>
+        <p><strong>Alice's Shared Key:</strong> <span id="alice-shared-key"></span></p>
+        <p><strong>Bob's Shared Key:</strong> <span id="bob-shared-key"></span></p>
+        <p><strong>Mallory's Shared Key:</strong> <span id="mallory-shared-key"></span></p>
+    </div>
+
+    <script>
+        // Function to update the keys in the keys window, including shared keys
+        function updateKeys(response) {
+            // Update public keys
+            $('#alice-public-key').text(response.alicePublicKey || 'Not Available');
+            $('#bob-public-key').text(response.bobPublicKey || 'Not Available');
+            $('#mallory-public-key').text(response.malloryPublicKey || 'Not Available');
+
+            // Update shared keys (use response.sharedKeys to retrieve the shared keys for Alice, Bob, and Mallory)
+            $('#alice-shared-key').text(response.aliceSharedKey || 'Not Available');
+            $('#bob-shared-key').text(response.bobSharedKey || 'Not Available');
+            $('#mallory-shared-key').text(response.mallorySharedKey || 'Not Available');
+
+            $('#keys-window').show(); // Show keys window if keys are updated
+        }
+
+        // Function to send a message and update chat and keys
+        function sendMessage(sender, attackMode) {
+            const inputId = attackMode ? '#attack-input' : '#normal-input';
+            const message = attackMode ? $('#modified-message').val() : $(inputId).val();
+            const messagesBox = attackMode ? '#attack-messages' : '#normal-messages';
+
+            $.ajax({
+                url: '/send_message',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ sender, message, attackMode }),
+                success: function(response) {
+                    const newMessage = `${sender}: ${message}\nSent: ${response.receivedMessage}\n`;
+                    $(messagesBox).val($(messagesBox).val() + newMessage);
+
+                    if (attackMode) {
+                        $('#attack-messages').val($(messagesBox).val() + `Mallory's Public Key: ${response.malloryPublicKey}\n`);
+                    }
+
+                    // Update the keys window with the public keys and shared keys
+                    updateKeys(response);
+                }
+            });
+        }
+
+        // Toggle between Normal Chat and Attack Chat based on checkbox
+        $('#attackModeSwitch').change(function() {
+            if (this.checked) {
+                $('#normal-chat').hide();
+                $('#attack-chat').show();
+                // Update keys when attack mode is enabled
+                updateKeys({
+                    alicePublicKey: '****',  // Replace with actual Alice's public key
+                    bobPublicKey: '****',    // Replace with actual Bob's public key
+                    malloryPublicKey: '****', // Replace with actual Mallory's public key
+                    aliceSharedKey: '****', // Replace with actual shared key
+                    bobSharedKey: '****',   // Replace with actual shared key
+                    mallorySharedKey: '****' // Replace with actual shared key
+                });
+            } else {
+                $('#attack-chat').hide();
+                $('#normal-chat').show();
+                // Clear the keys when switching back to normal mode
+                $('#alice-public-key').text('');
+                $('#bob-public-key').text('');
+                $('#mallory-public-key').text('');
+                $('#alice-shared-key').text('');
+                $('#bob-shared-key').text('');
+                $('#mallory-shared-key').text('');
+                $('#keys-window').hide();
+            }
+        }).change();
+    </script>
+</body>
+</html>

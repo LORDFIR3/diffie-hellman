@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e0f7fa;
+            border: 1px solid #00bcd4;
+            border-radius: 4px;
+            color: #00796b;
+        }
+        .error {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #ffebee;
+            border: 1px solid #d32f2f;
+            border-radius: 4px;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login Required</h1>
+        <p>Please log in through the authorization app to access this page.</p>
+        <div id="error" class="error" style="display:none;">Unauthorized Access</div>
+    </div>
+</body>
+</html>
